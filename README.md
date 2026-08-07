@@ -89,8 +89,6 @@ Também é possível criar uma conta nova pela tela de cadastro (`/register`).
   sessão. `axios` é configurado com `withCredentials` + `withXSRFToken` para o
   navegador cuidar do cookie sozinho.
 
-Mais detalhes e trade-offs em [`.claude/context/decisions.md`](.claude/context/decisions.md).
-
 ## Stack
 
 - React 19, TypeScript, Vite
