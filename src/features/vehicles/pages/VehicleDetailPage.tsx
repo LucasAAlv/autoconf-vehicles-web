@@ -1,5 +1,6 @@
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import StarOutlineIcon from "@mui/icons-material/StarOutline";
 import {
   Alert,
   Box,
@@ -8,8 +9,10 @@ import {
   CircularProgress,
   Dialog,
   Grid,
+  IconButton,
   Paper,
   Stack,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { useState } from "react";
@@ -17,7 +20,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../../features/auth/AuthContext";
 import { ConfirmDialog } from "../../../shared/components/ConfirmDialog";
 import { formatCurrency, formatKm } from "../../../shared/format";
+import { ImageUploadDropzone } from "../components/ImageUploadDropzone";
+import { useDeleteImage } from "../hooks/useDeleteImage";
 import { useDeleteVehicle } from "../hooks/useDeleteVehicle";
+import { useSetCoverImage } from "../hooks/useSetCoverImage";
+import { useUploadImages } from "../hooks/useUploadImages";
 import { useVehicle } from "../hooks/useVehicle";
 
 const fieldLabels: Record<string, string> = {
@@ -39,8 +46,12 @@ export function VehicleDetailPage() {
 
   const { data: vehicle, isLoading, isError } = useVehicle(vehicleId);
   const deleteVehicle = useDeleteVehicle();
+  const uploadImages = useUploadImages(vehicleId);
+  const setCoverImage = useSetCoverImage(vehicleId);
+  const deleteImage = useDeleteImage(vehicleId);
 
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [imageToDelete, setImageToDelete] = useState<number | null>(null);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
   if (isLoading) {
@@ -127,7 +138,12 @@ export function VehicleDetailPage() {
             <Grid container spacing={1} mt={0.5}>
               {vehicle.images.map((image) => (
                 <Grid key={image.id} size={3}>
-                  <Box position="relative">
+                  <Box
+                    position="relative"
+                    sx={{
+                      "&:hover .image-actions": { opacity: canManage ? 1 : 0 },
+                    }}
+                  >
                     <Box
                       component="img"
                       src={image.url}
@@ -151,10 +167,59 @@ export function VehicleDetailPage() {
                         sx={{ position: "absolute", bottom: 4, left: 4 }}
                       />
                     )}
+                    {canManage && (
+                      <Stack
+                        className="image-actions"
+                        direction="row"
+                        spacing={0.5}
+                        sx={{
+                          position: "absolute",
+                          top: 4,
+                          right: 4,
+                          opacity: 0,
+                          transition: "opacity 0.15s",
+                          bgcolor: "rgba(255,255,255,0.85)",
+                          borderRadius: 1,
+                        }}
+                      >
+                        {!image.is_cover && (
+                          <Tooltip title="Definir como capa">
+                            <IconButton
+                              size="small"
+                              onClick={() => setCoverImage.mutate(image.id)}
+                            >
+                              <StarOutlineIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                        <Tooltip title="Excluir imagem">
+                          <IconButton
+                            size="small"
+                            onClick={() => setImageToDelete(image.id)}
+                          >
+                            <DeleteOutlineIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </Stack>
+                    )}
                   </Box>
                 </Grid>
               ))}
             </Grid>
+          )}
+
+          {canManage && (
+            <Box mt={1.5}>
+              <ImageUploadDropzone
+                uploading={uploadImages.isPending}
+                onUpload={(files) => uploadImages.mutate(files)}
+              />
+              {uploadImages.isError && (
+                <Alert severity="error" sx={{ mt: 1 }}>
+                  Não foi possível enviar as imagens.
+                </Alert>
+              )}
+            </Box>
           )}
         </Grid>
 
@@ -219,6 +284,22 @@ export function VehicleDetailPage() {
         loading={deleteVehicle.isPending}
         onConfirm={handleDelete}
         onClose={() => setConfirmDeleteOpen(false)}
+      />
+
+      <ConfirmDialog
+        open={imageToDelete !== null}
+        title="Excluir imagem"
+        description="Tem certeza que deseja excluir esta imagem? Esta ação não pode ser desfeita."
+        confirmLabel="Excluir"
+        loading={deleteImage.isPending}
+        onConfirm={() => {
+          if (imageToDelete !== null) {
+            deleteImage.mutate(imageToDelete, {
+              onSuccess: () => setImageToDelete(null),
+            });
+          }
+        }}
+        onClose={() => setImageToDelete(null)}
       />
 
       <Dialog
