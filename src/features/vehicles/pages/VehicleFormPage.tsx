@@ -1,5 +1,6 @@
-import { Box, CircularProgress, Typography } from "@mui/material";
+import { Box, Skeleton, Stack, Typography } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
+import { useNotify } from "../../../shared/notifications/NotificationProvider";
 import { VehicleForm } from "../components/VehicleForm";
 import { useCreateVehicle } from "../hooks/useCreateVehicle";
 import { useUpdateVehicle } from "../hooks/useUpdateVehicle";
@@ -9,6 +10,7 @@ export function VehicleFormPage() {
   const { id } = useParams<{ id: string }>();
   const vehicleId = id ? Number(id) : null;
   const navigate = useNavigate();
+  const { notifySuccess } = useNotify();
 
   const existing = useVehicle(vehicleId ?? NaN);
   const createVehicle = useCreateVehicle();
@@ -16,9 +18,10 @@ export function VehicleFormPage() {
 
   if (vehicleId && existing.isLoading) {
     return (
-      <Box display="flex" justifyContent="center" py={6}>
-        <CircularProgress />
-      </Box>
+      <Stack spacing={2} maxWidth={640}>
+        <Skeleton variant="text" width={220} height={40} />
+        <Skeleton variant="rounded" height={400} />
+      </Stack>
     );
   }
 
@@ -50,6 +53,11 @@ export function VehicleFormPage() {
           const vehicle = vehicleId
             ? await updateVehicle.mutateAsync(payload)
             : await createVehicle.mutateAsync(payload);
+          notifySuccess(
+            vehicleId
+              ? "Veículo atualizado com sucesso."
+              : "Veículo criado com sucesso.",
+          );
           navigate(`/vehicles/${vehicle.id}`, { replace: true });
         }}
       />

@@ -6,11 +6,11 @@ import {
   Box,
   Button,
   Chip,
-  CircularProgress,
   Dialog,
   Grid,
   IconButton,
   Paper,
+  Skeleton,
   Stack,
   Tooltip,
   Typography,
@@ -20,6 +20,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../../features/auth/AuthContext";
 import { ConfirmDialog } from "../../../shared/components/ConfirmDialog";
 import { formatCurrency, formatKm } from "../../../shared/format";
+import { useNotify } from "../../../shared/notifications/NotificationProvider";
 import { ImageUploadDropzone } from "../components/ImageUploadDropzone";
 import { useDeleteImage } from "../hooks/useDeleteImage";
 import { useDeleteVehicle } from "../hooks/useDeleteVehicle";
@@ -44,7 +45,8 @@ export function VehicleDetailPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const { data: vehicle, isLoading, isError } = useVehicle(vehicleId);
+  const { data: vehicle, isLoading, isError, refetch } = useVehicle(vehicleId);
+  const { notifySuccess, notifyError } = useNotify();
   const deleteVehicle = useDeleteVehicle();
   const uploadImages = useUploadImages(vehicleId);
   const setCoverImage = useSetCoverImage(vehicleId);
@@ -56,22 +58,68 @@ export function VehicleDetailPage() {
 
   if (isLoading) {
     return (
-      <Box display="flex" justifyContent="center" py={6}>
-        <CircularProgress />
-      </Box>
+      <Grid container spacing={3}>
+        <Grid size={{ xs: 12, md: 5 }}>
+          <Skeleton variant="rounded" sx={{ aspectRatio: "4 / 3" }} />
+        </Grid>
+        <Grid size={{ xs: 12, md: 7 }}>
+          <Skeleton variant="rounded" height={220} />
+        </Grid>
+      </Grid>
     );
   }
 
   if (isError || !vehicle) {
-    return <Alert severity="error">Veículo não encontrado.</Alert>;
+    return (
+      <Alert
+        severity="error"
+        action={
+          <Button color="inherit" size="small" onClick={() => refetch()}>
+            Tentar de novo
+          </Button>
+        }
+      >
+        Não foi possível carregar o veículo.
+      </Alert>
+    );
   }
 
   const canManage = user?.is_admin || user?.id === vehicle.user_id;
   const cover = vehicle.images?.find((image) => image.is_cover);
 
   async function handleDelete() {
-    await deleteVehicle.mutateAsync(vehicle!.id);
-    navigate("/vehicles", { replace: true });
+    try {
+      await deleteVehicle.mutateAsync(vehicle!.id);
+      notifySuccess("Veículo excluído com sucesso.");
+      navigate("/vehicles", { replace: true });
+    } catch {
+      notifyError("Não foi possível excluir o veículo.");
+    }
+  }
+
+  function handleUpload(files: File[]) {
+    uploadImages.mutate(files, {
+      onSuccess: () => notifySuccess("Imagens enviadas com sucesso."),
+      onError: () => notifyError("Não foi possível enviar as imagens."),
+    });
+  }
+
+  function handleSetCover(imageId: number) {
+    setCoverImage.mutate(imageId, {
+      onSuccess: () => notifySuccess("Capa atualizada."),
+      onError: () => notifyError("Não foi possível definir a capa."),
+    });
+  }
+
+  function handleDeleteImage() {
+    if (imageToDelete === null) return;
+    deleteImage.mutate(imageToDelete, {
+      onSuccess: () => {
+        notifySuccess("Imagem excluída com sucesso.");
+        setImageToDelete(null);
+      },
+      onError: () => notifyError("Não foi possível excluir a imagem."),
+    });
   }
 
   return (
@@ -186,7 +234,7 @@ export function VehicleDetailPage() {
                           <Tooltip title="Definir como capa">
                             <IconButton
                               size="small"
-                              onClick={() => setCoverImage.mutate(image.id)}
+                              onClick={() => handleSetCover(image.id)}
                             >
                               <StarOutlineIcon fontSize="small" />
                             </IconButton>
@@ -212,13 +260,8 @@ export function VehicleDetailPage() {
             <Box mt={1.5}>
               <ImageUploadDropzone
                 uploading={uploadImages.isPending}
-                onUpload={(files) => uploadImages.mutate(files)}
+                onUpload={handleUpload}
               />
-              {uploadImages.isError && (
-                <Alert severity="error" sx={{ mt: 1 }}>
-                  Não foi possível enviar as imagens.
-                </Alert>
-              )}
             </Box>
           )}
         </Grid>
@@ -292,13 +335,7 @@ export function VehicleDetailPage() {
         description="Tem certeza que deseja excluir esta imagem? Esta ação não pode ser desfeita."
         confirmLabel="Excluir"
         loading={deleteImage.isPending}
-        onConfirm={() => {
-          if (imageToDelete !== null) {
-            deleteImage.mutate(imageToDelete, {
-              onSuccess: () => setImageToDelete(null),
-            });
-          }
-        }}
+        onConfirm={handleDeleteImage}
         onClose={() => setImageToDelete(null)}
       />
 
