@@ -50,7 +50,7 @@ O schema Zod do formulário de veículo replica as mesmas regras dos Form Reques
 **Decisão:** erros 422 (`application/problem+json`, membro `errors`) mapeados para os campos
 do formulário via `setError`; mensagens sem campo correspondente viram alerta geral.
 
-## ADR-006 — Escopo cortado para MVP de um dia
+## ADR-006 — Escopo cortado para MVP
 
 O desafio previa 9 marcos com 32 issues. Como entrega é de curta duração, cada marco ficou
 com uma única issue "guarda-chuva", absorvendo o essencial das demais; polimento

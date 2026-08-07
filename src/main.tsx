@@ -8,6 +8,7 @@ import { App } from "./App.tsx";
 import { AuthProvider } from "./features/auth/AuthContext.tsx";
 import "./index.css";
 import { queryClient } from "./shared/api/queryClient.ts";
+import { NotificationProvider } from "./shared/notifications/NotificationProvider.tsx";
 import { theme } from "./shared/theme/theme.ts";
 
 createRoot(document.getElementById("root")!).render(
@@ -16,9 +17,11 @@ createRoot(document.getElementById("root")!).render(
       <CssBaseline />
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
-          <AuthProvider>
-            <App />
-          </AuthProvider>
+          <NotificationProvider>
+            <AuthProvider>
+              <App />
+            </AuthProvider>
+          </NotificationProvider>
         </BrowserRouter>
         {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
       </QueryClientProvider>
