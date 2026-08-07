@@ -21,7 +21,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useMemo, useState } from "react";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { formatCurrency, formatKm } from "../../../shared/format";
 import { useDebouncedValue } from "../../../shared/hooks/useDebouncedValue";
 import { useVehicles } from "../hooks/useVehicles";
@@ -32,6 +32,7 @@ type SortField = "km" | "valor_venda";
 type SortDirection = "asc" | "desc";
 
 export function VehicleListPage() {
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
   const [marca, setMarca] = useState("");
@@ -224,13 +225,8 @@ export function VehicleListPage() {
                   <TableRow
                     key={vehicle.id}
                     hover
-                    component={RouterLink}
-                    to={`/vehicles/${vehicle.id}`}
-                    sx={{
-                      textDecoration: "none",
-                      cursor: "pointer",
-                      "& td": { color: "text.primary" },
-                    }}
+                    onClick={() => navigate(`/vehicles/${vehicle.id}`)}
+                    sx={{ cursor: "pointer" }}
                   >
                     <TableCell>{vehicle.placa}</TableCell>
                     <TableCell>{vehicle.marca}</TableCell>
