@@ -4,11 +4,11 @@ import {
   Alert,
   Box,
   Button,
-  CircularProgress,
   IconButton,
   InputAdornment,
   Pagination,
   Paper,
+  Skeleton,
   Stack,
   Table,
   TableBody,
@@ -67,7 +67,8 @@ export function VehicleListPage() {
     [page, debouncedQ, debouncedMarca, debouncedModelo, debouncedPlaca, sort],
   );
 
-  const { data, isLoading, isError, error, isFetching } = useVehicles(params);
+  const { data, isLoading, isError, error, isFetching, refetch } =
+    useVehicles(params);
 
   function toggleSort(field: SortField) {
     setPage(1);
@@ -159,16 +160,25 @@ export function VehicleListPage() {
       </Paper>
 
       {isError && (
-        <Alert severity="error">
+        <Alert
+          severity="error"
+          action={
+            <Button color="inherit" size="small" onClick={() => refetch()}>
+              Tentar de novo
+            </Button>
+          }
+        >
           Não foi possível carregar os veículos.{" "}
           {(error as Error)?.message ?? ""}
         </Alert>
       )}
 
       {isLoading ? (
-        <Box display="flex" justifyContent="center" py={6}>
-          <CircularProgress />
-        </Box>
+        <Stack spacing={1}>
+          {Array.from({ length: 6 }).map((_, index) => (
+            <Skeleton key={index} variant="rounded" height={53} />
+          ))}
+        </Stack>
       ) : data && data.data.length === 0 ? (
         <Paper variant="outlined" sx={{ p: 6, textAlign: "center" }}>
           <Typography color="text.secondary">
