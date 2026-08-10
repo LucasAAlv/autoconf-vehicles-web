@@ -1,4 +1,3 @@
-import DirectionsCarFilledOutlinedIcon from "@mui/icons-material/DirectionsCarFilledOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import {
   AppBar,
@@ -37,10 +36,12 @@ export function AppShell({ children }: { children: ReactNode }) {
             to="/"
             sx={{ textDecoration: "none", color: "inherit", flexGrow: 1 }}
           >
-            <DirectionsCarFilledOutlinedIcon color="secondary" />
-            <Typography variant="h6" component="span">
-              Autoconf Veículos
-            </Typography>
+            <Box
+              component="img"
+              src="https://autoconf.com.br/wp-content/uploads/2025/11/Camada_1.png"
+              alt="Autoconf"
+              sx={{ height: 32, width: "auto" }}
+            />
           </Stack>
           {user && (
             <Stack direction="row" alignItems="center" spacing={2}>
