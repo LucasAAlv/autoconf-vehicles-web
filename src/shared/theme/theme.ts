@@ -1,19 +1,19 @@
 import { createTheme } from "@mui/material/styles";
 
-// A quiet, elegant palette: deep ink primary, warm amber accent, soft
-// off-white background. Light mode only for now — the goal is a demo
+// Brand palette: blue primary, amber-yellow accent, soft off-white
+// background. Light mode only for now — the goal is a demo
 // that looks considered, not a full design system.
 export const theme = createTheme({
   palette: {
     mode: "light",
     primary: {
-      main: "#1c2536",
-      light: "#3a4358",
-      dark: "#10151f",
-      contrastText: "#f6f4ef",
+      main: "#307FE2",
+      light: "#5C9AEA",
+      dark: "#245FAA",
+      contrastText: "#ffffff",
     },
     secondary: {
-      main: "#c98a3e",
+      main: "#FDB833",
       contrastText: "#1c2536",
     },
     background: {

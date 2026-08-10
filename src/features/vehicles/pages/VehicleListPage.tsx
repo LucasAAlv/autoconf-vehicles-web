@@ -26,9 +26,9 @@ import { formatCurrency, formatKm } from "../../../shared/format";
 import { useDebouncedValue } from "../../../shared/hooks/useDebouncedValue";
 import { useVehicles } from "../hooks/useVehicles";
 
-const PER_PAGE = 15;
+const PER_PAGE = 10;
 
-type SortField = "km" | "valor_venda";
+type SortField = "km" | "valor_venda" | "marca" | "modelo";
 type SortDirection = "asc" | "desc";
 
 export function VehicleListPage() {
@@ -198,8 +198,36 @@ export function VehicleListPage() {
               <TableHead>
                 <TableRow>
                   <TableCell>Placa</TableCell>
-                  <TableCell>Marca</TableCell>
-                  <TableCell>Modelo</TableCell>
+                  <TableCell
+                    sortDirection={
+                      sort?.field === "marca" ? sort.direction : false
+                    }
+                  >
+                    <TableSortLabel
+                      active={sort?.field === "marca"}
+                      direction={
+                        sort?.field === "marca" ? sort.direction : "asc"
+                      }
+                      onClick={() => toggleSort("marca")}
+                    >
+                      Marca
+                    </TableSortLabel>
+                  </TableCell>
+                  <TableCell
+                    sortDirection={
+                      sort?.field === "modelo" ? sort.direction : false
+                    }
+                  >
+                    <TableSortLabel
+                      active={sort?.field === "modelo"}
+                      direction={
+                        sort?.field === "modelo" ? sort.direction : "asc"
+                      }
+                      onClick={() => toggleSort("modelo")}
+                    >
+                      Modelo
+                    </TableSortLabel>
+                  </TableCell>
                   <TableCell
                     sortDirection={
                       sort?.field === "valor_venda" ? sort.direction : false
